@@ -167,52 +167,15 @@
     /* Admin UI */
     .admin-layout {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
+      grid-template-columns: 1fr;
       gap: 14px;
-      align-items: stretch;
       margin-bottom: 16px;
     }
 
-    .upload-box {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(14px);
-      border-radius: 26px;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-      cursor: pointer;
-      text-align: center;
-      padding: 10px;
-    }
-
-    .upload-icon-circle {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.12);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-    }
-
-    .upload-text {
-      font-size: 16px;
-      font-weight: 700;
-      color: #ffffff;
-      word-break: break-all;
-    }
-
-    .admin-controls-right {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      justify-content: center;
+    .admin-controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
     .selector-pill {
@@ -229,7 +192,7 @@
       appearance: none;
       background: transparent;
       border: none;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       color: #1a2342;
       width: 100%;
@@ -243,6 +206,9 @@
       border-radius: 20px;
       padding: 16px;
       margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .admin-input {
@@ -252,9 +218,11 @@
       border: 1px solid rgba(255, 255, 255, 0.25);
       background: rgba(11, 19, 56, 0.8);
       color: #fff;
-      font-size: 16px;
+      font-size: 15px;
       outline: none;
     }
+
+    .admin-input:focus { border-color: #38bdf8; }
 
     .partager-btn {
       width: 100%;
@@ -281,23 +249,39 @@
       border: 1px solid rgba(255, 255, 255, 0.22);
       backdrop-filter: blur(14px);
       border-radius: 18px;
-      padding: 16px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
-    .pres-title { font-size: 17px; font-weight: 700; color: #ffffff; }
+    .pres-title { 
+      font-size: 19px; 
+      font-weight: 800; 
+      color: #ffffff; 
+    }
 
-    .open-link-btn {
-      text-align: center;
-      text-decoration: none;
-      background: linear-gradient(135deg, #0082ff 0%, #6d1ee6 100%);
+    /* زر العرض البارز والجميل */
+    .open-presentation-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0082ff 0%, #8b3dff 100%);
       color: #ffffff;
+      font-size: 16px;
       font-weight: 700;
-      font-size: 14px;
-      padding: 11px 16px;
-      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(0, 130, 255, 0.35);
+      transition: transform 0.15s;
+    }
+
+    .open-presentation-btn:active {
+      transform: scale(0.97);
     }
 
     .delete-btn {
@@ -428,13 +412,7 @@
     <div id="screen-admin" class="screen">
       <form id="addPresForm">
         <div class="admin-layout">
-          <div class="upload-box" id="uploadBoxTrigger">
-            <div class="upload-icon-circle" id="uploadIcon">☁️</div>
-            <div class="upload-text" id="uploadText">Upload</div>
-            <input type="file" id="pptFileInput" accept=".ppt, .pptx, .pdf, .key, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display: none;" />
-          </div>
-
-          <div class="admin-controls-right">
+          <div class="admin-controls-row">
             <div class="selector-pill">
               <select id="adminPeriode">
                 <option value="1">Période 1</option>
@@ -457,7 +435,8 @@
         </div>
 
         <div class="admin-inputs-extra">
-          <input type="text" id="adminTitle" class="admin-input" placeholder="Titre de la présentation..." required />
+          <input type="text" id="adminTitle" class="admin-input" placeholder="Titre de la présentation (ex: S1)..." required />
+          <input type="url" id="adminUrl" class="admin-input" placeholder="Coller le lien Google Drive du PPT ici..." required />
         </div>
 
         <button type="submit" class="partager-btn" id="submitPresBtn">Partager</button>
@@ -518,9 +497,6 @@
     let selectedPeriode = null;
     let selectedSemaine = null;
     let allPresentations = [];
-    let fileBase64Data = "";
-    let selectedFileName = "";
-    let selectedFileType = "";
 
     const screens = {
       periodes: document.getElementById("screen-periodes"),
@@ -575,31 +551,6 @@
       });
     });
 
-    // Upload Box & File Reader Logic
-    const uploadBoxTrigger = document.getElementById("uploadBoxTrigger");
-    const pptFileInput = document.getElementById("pptFileInput");
-    const uploadText = document.getElementById("uploadText");
-    const uploadIcon = document.getElementById("uploadIcon");
-
-    uploadBoxTrigger.addEventListener("click", () => pptFileInput.click());
-
-    pptFileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        selectedFileName = file.name;
-        selectedFileType = file.type || "application/octet-stream";
-        uploadText.textContent = file.name.length > 15 ? file.name.substring(0, 12) + "..." : file.name;
-        uploadIcon.textContent = "✅";
-
-        const reader = new FileReader();
-        reader.onload = function(uploadEvent) {
-          fileBase64Data = uploadEvent.target.result;
-          showToast("Fichier prêt à être partagé !");
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
     onSnapshot(query(presentationsRef, orderBy("createdAt", "desc")), (snapshot) => {
       allPresentations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       if (currentScreen === "presentations") renderUserPresentations();
@@ -615,9 +566,10 @@
       }
       container.innerHTML = filtered.map(item => `
         <div class="pres-item">
-               <div class="pres-title">${escapeHtml(item.title)}</div>
-          <a href="${item.fileData}" download="${escapeHtml(item.fileName || 'presentation.pptx')}" class="open-link-btn">
-            Télécharger / Ouvrir le PPT 📥
+          <div class="pres-title">${escapeHtml(item.title)}</div>
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="open-presentation-btn">
+            <span>Ouvrir la présentation</span>
+            <span>🚀</span>
           </a>
         </div>
       `).join("");
@@ -638,7 +590,10 @@
             </div>
             <button class="delete-btn" data-id="${item.id}">Supprimer</button>
           </div>
-          <div style="font-size:12px; color:rgba(255,255,255,0.7);">Fichier : ${escapeHtml(item.fileName || 'PPT')}</div>
+          <a href="${escapeHtml(item.url)}" target="_blank" class="open-presentation-btn" style="font-size: 14px; padding: 12px;">
+            <span>Voir le lien du fichier</span>
+            <span>🔗</span>
+          </a>
         </div>
       `).join("");
 
@@ -654,31 +609,24 @@
 
     document.getElementById("addPresForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!fileBase64Data) {
-        showToast("Veuillez d'abord cliquer sur Upload pour choisir le fichier PPT !", true);
-        return;
-      }
+      const titleVal = document.getElementById("adminTitle").value.trim();
+      const urlVal = document.getElementById("adminUrl").value.trim();
 
       const btn = document.getElementById("submitPresBtn");
       btn.disabled = true;
-      btn.textContent = "Enregistrement du PPT...";
+      btn.textContent = "Publication...";
       try {
         await addDoc(presentationsRef, {
           periode: document.getElementById("adminPeriode").value,
           semaine: document.getElementById("adminSemaine").value,
-          title: document.getElementById("adminTitle").value.trim(),
-          fileName: selectedFileName,
-          fileData: fileBase64Data,
+          title: titleVal,
+          url: urlVal,
           createdAt: serverTimestamp()
         });
         e.target.reset();
-        uploadText.textContent = "Upload";
-        uploadIcon.textContent = "☁️";
-        fileBase64Data = "";
-        selectedFileName = "";
-        showToast("Présentation partagée avec succès !");
+        showToast("Partagé avec succès !");
       } catch (err) {
-        showToast("Erreur : Fichier trop volumineux pour Firestore", true);
+        showToast("Erreur d'enregistrement", true);
       } finally {
         btn.disabled = false;
         btn.textContent = "Partager";

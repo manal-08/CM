@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>C&M - Espace Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p1-bg: linear-gradient(135deg, #0082ff 0%, #0066e6 100%);
+      --p2-bg: linear-gradient(135deg, #8b3dff 0%, #6d1ee6 100%);
+      --p3-bg: linear-gradient(135deg, #ff9924 0%, #f57c00 100%);
+      --p4-bg: linear-gradient(135deg, #16a34a 0%, #0f8a3c 100%);
+      --p5-bg: linear-gradient(135deg, #ff2e93 0%, #e01878 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      color: #ffffff;
+      background: 
+        radial-gradient(circle at 15% 15%, #16235a 0%, transparent 45%),
+        radial-gradient(circle at 85% 35%, #4a1e7c 0%, transparent 50%),
+        radial-gradient(circle at 25% 95%, #d96b27 0%, transparent 55%),
+        linear-gradient(160deg, #0b1338 0%, #241554 55%, #3d2147 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      padding: 24px 20px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sigma-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
+      border: 1.5px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.6), 0 0 28px rgba(56, 189, 248, 0.3);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .brand-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .top-action-btn {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-bottom: 22px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .card-center-last {
+      grid-column: 1 / -1;
+      width: calc(50% - 8px);
+      justify-self: center;
+    }
+
+    .periode-card {
+      aspect-ratio: 1 / 0.95;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    .p1 { background: var(--p1-bg); }
+    .p2 { background: var(--p2-bg); }
+    .p3 { background: var(--p3-bg); }
+    .p4 { background: var(--p4-bg); }
+    .p5 { background: var(--p5-bg); }
+
+    .semaine-card {
+      aspect-ratio: 1 / 0.96;
+      border-radius: 22px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(235, 240, 250, 0.88));
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .semaine-num { font-size: 52px; font-weight: 800; color: #131c4e; line-height: 1; }
+    .semaine-label { font-size: 14px; font-weight: 600; color: #2b356b; }
+
+    /* Admin UI */
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+
+    .upload-box {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(14px);
+      border-radius: 26px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .upload-icon-circle {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .upload-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      word-break: break-all;
+    }
+
+    .admin-controls-right {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .selector-pill {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 18px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .selector-pill select {
+      appearance: none;
+      background: transparent;
+      border: none;
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a2342;
+      width: 100%;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .admin-inputs-extra {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .admin-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(11, 19, 56, 0.8);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .partager-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 20px;
+      border: none;
+      background: linear-gradient(135deg, #ff8a00 0%, #e52e71 50%, #8b3dff 100%);
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(229, 46, 113, 0.4);
+    }
+
+    .pres-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .pres-item {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pres-title { font-size: 17px; font-weight: 700; color: #ffffff; }
+
+    .open-link-btn {
+      text-align: center;
+      text-decoration: none;
+      background: linear-gradient(135deg, #0082ff 0%, #6d1ee6 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 11px 16px;
+      border-radius: 12px;
+    }
+
+    .delete-btn {
+      background: rgba(239, 68, 68, 0.22);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+    }
+
+    /* Modal PIN */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 30, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      width: 100%;
+      max-width: 360px;
+      background: #18204d;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 24px;
+      padding: 26px 22px;
+      text-align: center;
+    }
+    .pin-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 4px;
+      outline: none;
+      margin: 14px 0;
+    }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-cancel { flex: 1; padding: 12px; border-radius: 12px; border: none; background: rgba(255,255,255,0.14); color: #fff; font-weight: 600; cursor: pointer; }
+    .btn-confirm { flex: 1; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #0082ff, #8b3dff); color: #fff; font-weight: 700; cursor: pointer; }
+
+    .status-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: #ffffff;
+      padding: 11px 20px;
+      border-radius: 99px;
+      font-size: 13.5px;
+      font-weight: 700;
+      display: none;
+      z-index: 2000;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="header">
+      <div class="brand-group">
+        <button class="sigma-btn" id="openAdminModalBtn">Σ</button>
+        <div class="brand-title">C&amp;M</div>
+      </div>
+      <button class="top-action-btn" id="topHeaderBtn" style="display: none;">Nouveau PPT</button>
+    </div>
+
+    <!-- SCREEN 1 -->
+    <div id="screen-periodes" class="screen active">
+      <h1 class="page-title">Choisir Période</h1>
+      <p class="page-subtitle">Sélectionnez la période</p>
+      <div class="cards-grid">
+        <div class="periode-card p1" data-periode="1">Période 1</div>
+        <div class="periode-card p2" data-periode="2">Période 2</div>
+        <div class="periode-card p3" data-periode="3">Période 3</div>
+        <div class="periode-card p4" data-periode="4">Période 4</div>
+        <div class="periode-card p5 card-center-last" data-periode="5">Période 5</div>
+      </div>
+    </div>
+
+    <!-- SCREEN 2 -->
+    <div id="screen-semaines" class="screen">
+      <h1 class="page-title">Choisir Semaine</h1>
+      <p class="page-subtitle" id="semaineSubtitle">Sélectionnez la semaine</p>
+      <div class="cards-grid">
+        <div class="semaine-card" data-semaine="1"><div class="semaine-num">1</div><div class="semaine-label">Semaine</div></div>
+        <div class="semaine-card" data-semaine="2"><div class="semaine-num">2</div><div class="semaine-label">Semaine</div></div>
+        <div class="semaine-card" data-semaine="3"><div class="semaine-num">3</div><div class="semaine-label">Semaine</div></div>
+        <div class="semaine-card" data-semaine="4"><div class="semaine-num">4</div><div class="semaine-label">Semaine</div></div>
+        <div class="semaine-card card-center-last" data-semaine="5"><div class="semaine-num">5</div><div class="semaine-label">Semaine</div></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 3 -->
+    <div id="screen-presentations" class="screen">
+      <div style="display:inline-block; background:rgba(255,255,255,0.16); padding:6px 14px; border-radius:99px; font-size:13px; font-weight:600; margin-bottom:18px;" id="presContextBadge">Période 1 • Semaine 1</div>
+      <h1 class="page-title">Présentations</h1>
+      <p class="page-subtitle">Consultez les présentations</p>
+      <div id="presentationsContainer" class="pres-list">
+        <div class="empty-state">Chargement...</div>
+      </div>
+    </div>
+
+    <!-- SCREEN 4: ADMIN -->
+    <div id="screen-admin" class="screen">
+      <form id="addPresForm">
+        <div class="admin-layout">
+          <div class="upload-box" id="uploadBoxTrigger">
+            <div class="upload-icon-circle" id="uploadIcon">☁️</div>
+            <div class="upload-text" id="uploadText">Upload</div>
+            <input type="file" id="pptFileInput" accept=".ppt, .pptx, .pdf, .key, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display: none;" />
+          </div>
+
+          <div class="admin-controls-right">
+            <div class="selector-pill">
+              <select id="adminPeriode">
+                <option value="1">Période 1</option>
+                <option value="2">Période 2</option>
+                <option value="3">Période 3</option>
+                <option value="4">Période 4</option>
+                <option value="5">Période 5</option>
+              </select>
+            </div>
+            <div class="selector-pill">
+              <select id="adminSemaine">
+                <option value="1">Semaine 1</option>
+                <option value="2">Semaine 2</option>
+                <option value="3">Semaine 3</option>
+                <option value="4">Semaine 4</option>
+                <option value="5">Semaine 5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-inputs-extra">
+          <input type="text" id="adminTitle" class="admin-input" placeholder="Titre de la présentation..." required />
+        </div>
+
+        <button type="submit" class="partager-btn" id="submitPresBtn">Partager</button>
+      </form>
+
+      <h3 style="font-size: 17px; margin: 24px 0 12px;">Présentations publiées</h3>
+      <div id="adminAllList" class="pres-list"></div>
+    </div>
+  </div>
+
+  <!-- PIN Modal -->
+  <div class="modal-overlay" id="pinModal">
+    <div class="modal-box">
+      <div style="font-size:18px; font-weight:800; margin-bottom:6px;">Accès Administrateur Σ</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.7);">Entrez le code secret</div>
+      <input type="password" id="pinInput" class="pin-input" maxlength="12" placeholder="••••" />
+      <p id="pinError" style="color:#f87171; font-size:12.5px; margin-bottom:12px; display:none;">Code incorrect !</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" id="closeModalBtn">Annuler</button>
+        <button class="btn-confirm" id="verifyPinBtn">Entrer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-toast" id="toastMsg">Opération réussie !</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      deleteDoc, 
+      doc, 
+      onSnapshot, 
+      query, 
+      orderBy, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTChGgz6KdoH55ms-HzLd80agQXysbtUY",
+      authDomain: "cm-presentations-app.firebaseapp.com",
+      projectId: "cm-presentations-app",
+      storageBucket: "cm-presentations-app.firebasestorage.app",
+      messagingSenderId: "417824531887",
+      appId: "1:417824531887:web:0552ed0b5949cc477f3b5a",
+      measurementId: "G-Y0D1JN06LH"
+    };
+
+    const ADMIN_SECRET_CODE = "19471964";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const presentationsRef = collection(db, "presentations");
+
+    let currentScreen = "periodes";
+    let selectedPeriode = null;
+    let selectedSemaine = null;
+    let allPresentations = [];
+    let fileBase64Data = "";
+    let selectedFileName = "";
+    let selectedFileType = "";
+
+    const screens = {
+      periodes: document.getElementById("screen-periodes"),
+      semaines: document.getElementById("screen-semaines"),
+      presentations: document.getElementById("screen-presentations"),
+      admin: document.getElementById("screen-admin")
+    };
+    const topHeaderBtn = document.getElementById("topHeaderBtn");
+    const toastMsg = document.getElementById("toastMsg");
+
+    function showToast(text, isError = false) {
+      toastMsg.textContent = text;
+      toastMsg.style.background = isError ? "#ef4444" : "#10b981";
+      toastMsg.style.display = "block";
+      setTimeout(() => { toastMsg.style.display = "none"; }, 2800);
+    }
+
+    function navigateTo(screenName) {
+      Object.values(screens).forEach(s => s.classList.remove("active"));
+      screens[screenName].classList.add("active");
+      currentScreen = screenName;
+      
+      if (screenName === "periodes") {
+        topHeaderBtn.style.display = "none";
+      } else {
+        topHeaderBtn.style.display = "block";
+        topHeaderBtn.textContent = "← Retour";
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    topHeaderBtn.addEventListener("click", () => {
+      if (currentScreen === "admin") navigateTo("periodes");
+      else if (currentScreen === "presentations") navigateTo("semaines");
+      else if (currentScreen === "semaines") navigateTo("periodes");
+    });
+
+    document.querySelectorAll(".periode-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectedPeriode = card.dataset.periode;
+        document.getElementById("semaineSubtitle").textContent = `Période ${selectedPeriode} — Sélectionnez la semaine`;
+        navigateTo("semaines");
+      });
+    });
+
+    document.querySelectorAll(".semaine-card").forEach(card => {
+      card.addEventListener("click", () => {
+        selectedSemaine = card.dataset.semaine;
+        document.getElementById("presContextBadge").textContent = `Période ${selectedPeriode} • Semaine ${selectedSemaine}`;
+        renderUserPresentations();
+        navigateTo("presentations");
+      });
+    });
+
+    // Upload Box & File Reader Logic
+    const uploadBoxTrigger = document.getElementById("uploadBoxTrigger");
+    const pptFileInput = document.getElementById("pptFileInput");
+    const uploadText = document.getElementById("uploadText");
+    const uploadIcon = document.getElementById("uploadIcon");
+
+    uploadBoxTrigger.addEventListener("click", () => pptFileInput.click());
+
+    pptFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedFileName = file.name;
+        selectedFileType = file.type || "application/octet-stream";
+        uploadText.textContent = file.name.length > 15 ? file.name.substring(0, 12) + "..." : file.name;
+        uploadIcon.textContent = "✅";
+
+        const reader = new FileReader();
+        reader.onload = function(uploadEvent) {
+          fileBase64Data = uploadEvent.target.result;
+          showToast("Fichier prêt à être partagé !");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    onSnapshot(query(presentationsRef, orderBy("createdAt", "desc")), (snapshot) => {
+      allPresentations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (currentScreen === "presentations") renderUserPresentations();
+      renderAdminList();
+    });
+
+    function renderUserPresentations() {
+      const container = document.getElementById("presentationsContainer");
+      const filtered = allPresentations.filter(i => String(i.periode) === String(selectedPeriode) && String(i.semaine) === String(selectedSemaine));
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state">Aucune présentation disponible pour Pé. ${selectedPeriode} - Sem. ${selectedSemaine}.</div>`;
+        return;
+      }
+      container.innerHTML = filtered.map(item => `
+        <div class="pres-item">
+               <div class="pres-title">${escapeHtml(item.title)}</div>
+          <a href="${item.fileData}" download="${escapeHtml(item.fileName || 'presentation.pptx')}" class="open-link-btn">
+            Télécharger / Ouvrir le PPT 📥
+          </a>
+        </div>
+      `).join("");
+    }
+
+    function renderAdminList() {
+      const list = document.getElementById("adminAllList");
+      if (allPresentations.length === 0) {
+        list.innerHTML = `<div class="empty-state">Aucune publication.</div>`;
+        return;
+      }
+      list.innerHTML = allPresentations.map(item => `
+        <div class="pres-item">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <span style="font-size:11px; background:rgba(255,255,255,0.18); padding:2px 8px; border-radius:6px; font-weight:700;">Pé. ${item.periode} • Sem. ${item.semaine}</span>
+              <div class="pres-title" style="margin-top:6px;">${escapeHtml(item.title)}</div>
+            </div>
+            <button class="delete-btn" data-id="${item.id}">Supprimer</button>
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.7);">Fichier : ${escapeHtml(item.fileName || 'PPT')}</div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (confirm("Supprimer cette présentation ?")) {
+            await deleteDoc(doc(db, "presentations", btn.dataset.id));
+            showToast("Supprimé !");
+          }
+        });
+      });
+    }
+
+    document.getElementById("addPresForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!fileBase64Data) {
+        showToast("Veuillez d'abord cliquer sur Upload pour choisir le fichier PPT !", true);
+        return;
+      }
+
+      const btn = document.getElementById("submitPresBtn");
+      btn.disabled = true;
+      btn.textContent = "Enregistrement du PPT...";
+      try {
+        await addDoc(presentationsRef, {
+          periode: document.getElementById("adminPeriode").value,
+          semaine: document.getElementById("adminSemaine").value,
+          title: document.getElementById("adminTitle").value.trim(),
+          fileName: selectedFileName,
+          fileData: fileBase64Data,
+          createdAt: serverTimestamp()
+        });
+        e.target.reset();
+        uploadText.textContent = "Upload";
+        uploadIcon.textContent = "☁️";
+        fileBase64Data = "";
+        selectedFileName = "";
+        showToast("Présentation partagée avec succès !");
+      } catch (err) {
+        showToast("Erreur : Fichier trop volumineux pour Firestore", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Partager";
+      }
+    });
+
+    const pinModal = document.getElementById("pinModal");
+    const pinInput = document.getElementById("pinInput");
+    const pinError = document.getElementById("pinError");
+
+    document.getElementById("openAdminModalBtn").addEventListener("click", () => {
+      if (currentScreen === "admin") return;
+      pinInput.value = "";
+      pinError.style.display = "none";
+      pinModal.classList.add("active");
+      setTimeout(() => pinInput.focus(), 100);
+    });
+
+    document.getElementById("closeModalBtn").addEventListener("click", () => pinModal.classList.remove("active"));
+
+    function checkPin() {
+      if (pinInput.value === ADMIN_SECRET_CODE) {
+        pinModal.classList.remove("active");
+        navigateTo("admin");
+      } else {
+        pinError.style.display = "block";
+        pinInput.value = "";
+      }
+    }
+    document.getElementById("verifyPinBtn").addEventListener("click", checkPin);
+    pinInput.addEventListener("keypress", (e) => { if (e.key === "Enter") checkPin(); });
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+    }
+  </script>
+</body>
+</html>

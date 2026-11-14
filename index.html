@@ -276,6 +276,9 @@
       font-weight: 700;
       text-decoration: none;
       box-shadow: 0 6px 18px rgba(0, 130, 255, 0.35);
+      cursor: pointer;
+      border: none;
+      outline: none;
       transition: transform 0.15s;
     }
 
@@ -351,12 +354,13 @@
       transform: translateX(-50%);
       background: #10b981;
       color: #ffffff;
-      padding: 11px 20px;
+      padding: 12px 22px;
       border-radius: 99px;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 700;
       display: none;
       z-index: 2000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
   </style>
 </head>
@@ -435,7 +439,7 @@
 
         <div class="admin-inputs-extra">
           <input type="text" id="adminTitle" class="admin-input" placeholder="Titre de la présentation (ex: S1)..." required />
-          <input type="url" id="adminUrl" class="admin-input" placeholder="Coller le lien direct de téléchargement du PPT ici..." required />
+          <input type="url" id="adminUrl" class="admin-input" placeholder="Coller le lien Google Drive du PPT ici..." required />
         </div>
 
         <button type="submit" class="partager-btn" id="submitPresBtn">Partager</button>
@@ -460,7 +464,7 @@
     </div>
   </div>
 
-  <div class="status-toast" id="toastMsg">Opération réussية !</div>
+  <div class="status-toast" id="toastMsg">Opération réussie !</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -510,7 +514,7 @@
       toastMsg.textContent = text;
       toastMsg.style.background = isError ? "#ef4444" : "#10b981";
       toastMsg.style.display = "block";
-      setTimeout(() => { toastMsg.style.display = "none"; }, 2800);
+      setTimeout(() => { toastMsg.style.display = "none"; }, 3000);
     }
 
     function navigateTo(screenName) {
@@ -556,16 +560,30 @@
       renderAdminList();
     });
 
-    // تحويل رابط Google Drive العادي إلى رابط تحميل مباشر تلقائياً
     function getDirectDownloadUrl(url) {
       if (!url) return "#";
-      // إذا كان الرابط من Google Drive
       let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
       if (match && match[1]) {
         return `https://docs.google.com/uc?export=download&id=${match[1]}`;
       }
       return url;
     }
+
+    // دالة لتحميل الملف في الخلفية دون مغادرة الصفحة
+    window.downloadFileInBackground = function(url, title) {
+      showToast("Téléchargement en cours...");
+      
+      // إنشاء عنصر إطار خفي (iframe) لتنفيذ التحميل في الخلفية
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      
+      // إزالة الإطار الخفي بعد بضع ثوانٍ
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 10000);
+    };
 
     function renderUserPresentations() {
       const container = document.getElementById("presentationsContainer");
@@ -579,10 +597,10 @@
         return `
           <div class="pres-item">
             <div class="pres-title">${escapeHtml(item.title)}</div>
-            <a href="${escapeHtml(directUrl)}" class="open-presentation-btn" download>
+            <button class="open-presentation-btn" onclick="downloadFileInBackground('${escapeHtml(directUrl)}', '${escapeHtml(item.title)}')">
               <span>Télécharger le PPT</span>
               <span>📥</span>
-            </a>
+            </button>
           </div>
         `;
       }).join("");
@@ -598,12 +616,12 @@
         <div class="pres-item">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
-              <span style="font-size:11px; background:rgba(255,255,255,0.18); padding:2px 8px; border-radius:6px; font-weight:700;">Pé. ${item.periode} • Sem. ${item.semaine}</span>
+            <span style="font-size:11px; background:rgba(255,255,255,0.18); padding:2px 8px; border-radius:6px; font-weight:700;">Pé. ${item.periode} • Sem. ${item.semaine}</span>
               <div class="pres-title" style="margin-top:6px;">${escapeHtml(item.title)}</div>
             </div>
             <button class="delete-btn" data-id="${item.id}">Supprimer</button>
           </div>
-          <a href="${escapeHtml(item.url)}" target="_blank" class="open-presentation-btn" style="font-size: 14px; padding: 12px;">
+          <a href="${escapeHtml(item.url)}" target="_blank" class="open-presentation-btn" style="font-size: 14px; padding: 12px; margin-top:8px; text-decoration:none;">
             <span>Lien source</span>
             <span>🔗</span>
           </a>

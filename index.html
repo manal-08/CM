@@ -262,7 +262,6 @@
       color: #ffffff; 
     }
 
-    /* زر العرض البارز والجميل */
     .open-presentation-btn {
       display: flex;
       align-items: center;
@@ -436,7 +435,7 @@
 
         <div class="admin-inputs-extra">
           <input type="text" id="adminTitle" class="admin-input" placeholder="Titre de la présentation (ex: S1)..." required />
-          <input type="url" id="adminUrl" class="admin-input" placeholder="Coller le lien Google Drive du PPT ici..." required />
+          <input type="url" id="adminUrl" class="admin-input" placeholder="Coller le lien direct de téléchargement du PPT ici..." required />
         </div>
 
         <button type="submit" class="partager-btn" id="submitPresBtn">Partager</button>
@@ -461,7 +460,7 @@
     </div>
   </div>
 
-  <div class="status-toast" id="toastMsg">Opération réussie !</div>
+  <div class="status-toast" id="toastMsg">Opération réussية !</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -557,6 +556,17 @@
       renderAdminList();
     });
 
+    // تحويل رابط Google Drive العادي إلى رابط تحميل مباشر تلقائياً
+    function getDirectDownloadUrl(url) {
+      if (!url) return "#";
+      // إذا كان الرابط من Google Drive
+      let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        return `https://docs.google.com/uc?export=download&id=${match[1]}`;
+      }
+      return url;
+    }
+
     function renderUserPresentations() {
       const container = document.getElementById("presentationsContainer");
       const filtered = allPresentations.filter(i => String(i.periode) === String(selectedPeriode) && String(i.semaine) === String(selectedSemaine));
@@ -564,15 +574,18 @@
         container.innerHTML = `<div class="empty-state">Aucune présentation disponible pour Pé. ${selectedPeriode} - Sem. ${selectedSemaine}.</div>`;
         return;
       }
-      container.innerHTML = filtered.map(item => `
-        <div class="pres-item">
-          <div class="pres-title">${escapeHtml(item.title)}</div>
-          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="open-presentation-btn">
-            <span>Ouvrir la présentation</span>
-            <span>🚀</span>
-          </a>
-        </div>
-      `).join("");
+      container.innerHTML = filtered.map(item => {
+        const directUrl = getDirectDownloadUrl(item.url);
+        return `
+          <div class="pres-item">
+            <div class="pres-title">${escapeHtml(item.title)}</div>
+            <a href="${escapeHtml(directUrl)}" class="open-presentation-btn" download>
+              <span>Télécharger le PPT</span>
+              <span>📥</span>
+            </a>
+          </div>
+        `;
+      }).join("");
     }
 
     function renderAdminList() {
@@ -591,7 +604,7 @@
             <button class="delete-btn" data-id="${item.id}">Supprimer</button>
           </div>
           <a href="${escapeHtml(item.url)}" target="_blank" class="open-presentation-btn" style="font-size: 14px; padding: 12px;">
-            <span>Voir le lien du fichier</span>
+            <span>Lien source</span>
             <span>🔗</span>
           </a>
         </div>

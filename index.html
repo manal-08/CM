@@ -460,7 +460,7 @@
         <div class="choice-card" id="goToFiches">
           <div class="choice-info">
             <h3>Fiches Pédagogiques</h3>
-            <p>جذاذات الدروس PDF</p>
+           
           </div>
           <div class="choice-icon">📄</div>
         </div>
@@ -572,7 +572,7 @@
     let currentScreen = "periodes";
     let selectedPeriode = null;
     let selectedSemaine = null;
-    let currentCategory = "cours"; // 'cours' أو 'fiche'
+    let currentCategory = "cours";
     let allPresentations = [];
 
     const screens = {
@@ -613,6 +613,7 @@
       else if (currentScreen === "semaines") navigateTo("periodes");
     });
 
+    // تصحيح التقاط رقم الفترة الصحيحة عند النقر عليها
     document.querySelectorAll(".periode-card").forEach(card => {
       card.addEventListener("click", () => {
         selectedPeriode = card.dataset.periode;
@@ -621,10 +622,13 @@
       });
     });
 
+    // تصحيح التقاط رقم الأسبوع الصحيح عند النقر عليه
     document.querySelectorAll(".semaine-card").forEach(card => {
       card.addEventListener("click", () => {
         selectedSemaine = card.dataset.semaine;
-        document.getElementById("choixContextBadge").textContent = `Période ${selectedPeriode} • Semaine ${selectedSemaine}`;
+        const badgeText = `Période ${selectedPeriode} • Semaine ${selectedSemaine}`;
+        document.getElementById("choixContextBadge").textContent = badgeText;
+        document.getElementById("presContextBadge").textContent = badgeText;
         navigateTo("choix");
       });
     });
@@ -632,6 +636,7 @@
     document.getElementById("goToCours").addEventListener("click", () => {
       currentCategory = "cours";
       document.getElementById("listTitle").textContent = "Les Cours (PPT)";
+      document.getElementById("listSubtitle").textContent = "Consultez les présentations";
       renderUserPresentations();
       navigateTo("presentations");
     });
@@ -639,7 +644,7 @@
     document.getElementById("goToFiches").addEventListener("click", () => {
       currentCategory = "fiche";
       document.getElementById("listTitle").textContent = "Fiches Pédagogiques";
-      document.getElementById("listSubtitle").textContent = "Consultez les جذاذات الدروس";
+      document.getElementById("listSubtitle").textContent = "Consultez les fiches pédagogiques";
       renderUserPresentations();
       navigateTo("presentations");
     });
